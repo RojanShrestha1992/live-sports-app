@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { getLiveStreamBySource } from "../api/api";
 import { useLocation, useNavigate } from "react-router-dom";
-
-
- 
+import API from "../api/api";
 const MatchCard = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
   const match = location.state?.match; // Access the match object passed from CategoryMatches
   const categoryId = location.state?.categoryId; // Access the category ID passed from CategoryMatches
- 
+
   //   console.log(id)
   //   console.log("MatchCard ID: ", id);
   const [streams, setStreams] = useState([]);
@@ -42,10 +40,10 @@ const MatchCard = () => {
                 sourceObj.source,
                 sourceObj.id,
               );
-            //   console.log("matchcard: ", res.data);
+              //   console.log("matchcard: ", res.data);
               return res.data;
             } catch (err) {
-                              console.log(`Source ${sourceObj.source} failed:`, err);
+              console.log(`Source ${sourceObj.source} failed:`, err);
 
               return null;
             }
@@ -71,28 +69,51 @@ const MatchCard = () => {
   //       </p>
   //     );
 
+  
   return (
     <div className="p-6 max-w-5xl mx-auto text-white">
-      <h1 className="text-3xl font-bold mb-6">Watch Match Live</h1>
-      <div className="mb-5">
-        <button 
-        className="cursor-pointer bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg transition"
-        onClick={()=>{
-            if(categoryId){
-                navigate(`/category/${categoryId}`)
-            }else{
-                navigate(-1)
-            }
-        }}>Go Back</button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-12">
+        <div>
+          <h1 className="text-3xl font-bold mb-6">Watch Match Live</h1>
+          <div className="mb-5">
+            <button
+              className="cursor-pointer bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg transition"
+              onClick={() => {
+                if (categoryId) {
+                  navigate(`/category/${categoryId}`);
+                } else {
+                  navigate(-1);
+                }
+              }}
+            >
+              Go Back
+            </button>
+          </div>
+          <p className="text-gray-300 mb-2">
+            Cateory: {match?.category.toUpperCase()} • Date:{" "}
+            {new Date(match.date).toLocaleDateString()}
+          </p>
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold mb-3">Teams</h2>
+          <div className="flex items-center gap-4">
+            <img
+              src={`${API.defaults.baseURL}/api/images/proxy/${match.teams?.home.badge}.webp`}
+              alt={match.teams?.home.name}
+              className="w-16 h-16 object-contain"
+            />
+            <p className="text-white">{match.teams?.home.name}</p>
+            <span className="text-white font-bold">VS</span>
+            <p className="text-white">{match.teams?.away.name}</p>
+            <img
+              src={`${API.defaults.baseURL}/api/images/proxy/${match.teams?.away.badge}.webp`}
+              alt={match.teams?.away.name}
+              className="w-16 h-16 object-contain"
+            />
+          </div>
+        </div>
       </div>
-      <p className="text-gray-300 mb-2">
-        Cateory: {match?.category.toUpperCase()} • Date:{" "}
-        {new Date(match.date).toLocaleDateString()}
-      </p>
-      <h2 className="text-xl font-semibold mb-3">Teams</h2>
-      <p className="text-gray-300 mb-6">
-        {match.teams.home.name} vs {match.teams.away.name}
-      </p>
 
       {/* select source */}
       {streams.length ? (
@@ -115,8 +136,6 @@ const MatchCard = () => {
         </p>
       )}
 
-
-      
       {streams[currentStream] && (
         <div className="relative pt-[56.25%]">
           <iframe

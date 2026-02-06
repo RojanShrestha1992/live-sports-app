@@ -14,7 +14,8 @@ const Category = () => {
   const navigate = useNavigate();
   return (
     <>
-      <section className="p-6 max-w-7xl mx-auto">
+      <section className="p-6 max-w-7xl mx-auto ">
+        <h1 className="font-semibold text-2xl leading-tight mb-5">Sports by Category</h1>
         <Swiper
           slidesPerView={2}
           spaceBetween={20}
@@ -24,8 +25,8 @@ const Category = () => {
           }}
           breakpoints={{
             640: { slidesPerView: 3 },
-            768: { slidesPerView: 4 },
-            1024: { slidesPerView: 5 },
+            768: { slidesPerView: 5 },
+            1024: { slidesPerView: 6 },
           }}
           modules={[Pagination]}
           className="mySwiper"
@@ -37,7 +38,7 @@ const Category = () => {
               <SwiperSlide key={category.id}>
                 {" "}
                 <div
-                  className="bg-gray-800 aspect-square text-white p-6 rounded-lg text-center flex items-center justify-center cursor-pointer hover:bg-red-600 transition"
+                  className="bg-gray-800 aspect-square text-white p-6 rounded-lg text-center text-3xl flex items-center justify-center cursor-pointer hover:bg-gray-700 transition"
                   onClick={() => navigate(`/category/${category.id}`)}
                 >
                   {category.name}
