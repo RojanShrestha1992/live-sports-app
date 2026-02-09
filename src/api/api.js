@@ -10,7 +10,11 @@ export const getCategories = () =>{
 export const getStreamsById = (id) =>{
     return API.get(`/api/matches/${id}`);
 }
+export const getPopularMatches = () => {
+    // return API.get("/api/matches/all/popular")
+    return API.get("/api/matches/all-today/popular")
 
+}
 
 export const getLiveStreamBySource = (source,id)=>{
     return API.get(`/api/stream/${source}/${id}`);

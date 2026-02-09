@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getStreamsById } from "../api/api";
 import API from "../api/api";
-import { FaStar } from "react-icons/fa";
 
 const CategoryMatches = () => {
   const { id } = useParams();
@@ -66,7 +65,7 @@ const CategoryMatches = () => {
   // ----- Render -----
   return (
     <section className="p-6 mx-auto max-w-7xl">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-2">
         <h2 className="text-2xl font-bold text-white">Matches</h2>
         <button
           onClick={() => setShowPopular(!showPopular)}
@@ -75,6 +74,14 @@ const CategoryMatches = () => {
           {showPopular ? "Show All" : "Show Popular"}
         </button>
       </div>
+       <button
+              className=" mb-2 cursor-pointer bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg transition"
+              onClick={() => {
+                navigate(`/`)
+              }}
+            >
+              Go Back
+            </button>
 
       {/* Render each date group */}
       {Object.entries(groupedMatches).map(([dateLabel, matchesForDate]) => (
@@ -92,16 +99,16 @@ const CategoryMatches = () => {
               >
                 {/* Poster */}
                 <img
-                  src={`${API.defaults.baseURL}${match.poster}`}
+                  src={match.poster ? `${API.defaults.baseURL}${match.poster}`: "/public/placeholder.png"}
                   alt={match.title}
                   className="w-full object-contain group-hover:scale-110 transition-transform duration-400 bg-gray-800"
                 />
 
                 {/* Popular star */}
                 {match.popular && (
-                  <div className="absolute top-2 right-2 text-yellow-500">
-                    <FaStar />
-                  </div>
+                 <div className="absolute top-2 right-2 bg-yellow-500 text-gray-900 rounded-full px-2 py-1 text-xs font-bold">
+                      ★ Popular
+                    </div>
                 )}
 
                 {/* Match info */}

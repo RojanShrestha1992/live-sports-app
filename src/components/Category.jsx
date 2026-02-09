@@ -38,7 +38,7 @@ const Category = () => {
               <SwiperSlide key={category.id}>
                 {" "}
                 <div
-                  className="bg-gray-800 aspect-square text-white p-6 rounded-lg text-center text-3xl flex items-center justify-center cursor-pointer hover:bg-gray-700 transition"
+                  className="bg-gray-800 aspect-square text-white p-2 rounded-lg text-center text-2xl flex items-center justify-center cursor-pointer hover:bg-gray-700 transition"
                   onClick={() => navigate(`/category/${category.id}`)}
                 >
                   {category.name}
