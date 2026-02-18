@@ -2,29 +2,22 @@ import React, { useEffect, useState } from "react";
 import { getLiveStreamBySource } from "../api/api";
 import { useLocation, useNavigate } from "react-router-dom";
 import API from "../api/api";
+
 const MatchCard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const match = location.state?.match; // Access the match object passed from CategoryMatches
-  const categoryId = location.state?.categoryId; // Access the category ID passed from CategoryMatches
+  const match = location.state?.match;
 
-  //   console.log(id)
-  //   console.log("MatchCard ID: ", id);
   const [streams, setStreams] = useState([]);
   const [currentStream, setCurrentStream] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("Streams fetched:", streams);
-  }, [streams]);
-
-  useEffect(() => {
     if (streams.length) {
-      setCurrentStream(0); // select the first stream automatically
+      setCurrentStream(0);
     }
   }, [streams]);
 
-  //fetch streams for all sources
   useEffect(() => {
     if (!match || !match.sources || !match.sources.length) {
       setLoading(false);
@@ -36,20 +29,14 @@ const MatchCard = () => {
         const results = await Promise.all(
           match.sources.map(async (sourceObj) => {
             try {
-              const res = await getLiveStreamBySource(
-                sourceObj.source,
-                sourceObj.id,
-              );
-              //   console.log("matchcard: ", res.data);
+              const res = await getLiveStreamBySource(sourceObj.source, sourceObj.id);
               return res.data;
             } catch (err) {
               console.log(`Source ${sourceObj.source} failed:`, err);
-
               return null;
             }
-          }),
+          })
         );
-        //remove nuulls
         const availableStreams = results.flat().filter(Boolean);
         setStreams(availableStreams);
       } catch (err) {
@@ -61,93 +48,161 @@ const MatchCard = () => {
     fetchStreams();
   }, [match]);
 
-  if (loading) return <p className="text-white text-center py-6">Loading...</p>;
-  //   if (!streams.length)
-  //     return (
-  //       <p className="text-white text-center py-6">
-  //         No streams available for this match.
-  //       </p>
-  //     );
+  if (loading) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
+          <p className="text-gray-400 mt-4">Loading stream...</p>
+        </div>
+      </div>
+    );
+  }
 
-  
   return (
-    <div className="p-6 max-w-5xl mx-auto text-white">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-12">
-        <div>
-          <h1 className="text-3xl font-bold mb-6">Watch Match Live</h1>
-          <div className="mb-5">
-            <button
-              className="cursor-pointer bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg transition"
-              onClick={() => {
-                if (categoryId) {
-                  navigate(`/category/${categoryId}`);
+    <section className="w-full py-8">
+      <div className="max-w-6xl mx-auto px-6">
+        {/* Header */}
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">Watch Live</h1>
+            <p className="text-gray-400 text-sm">{match?.title}</p>
+          </div>
+          <button
+            onClick={() => {
+                if (match?.categoryId) {
+                  navigate(`/category/${match.categoryId}`);
                 } else {
                   navigate(-1);
                 }
-              }}
-            >
-              Go Back
-            </button>
-          </div>
-          <p className="text-gray-300 mb-2">
-            Cateory: {match?.category.toUpperCase()} • Date:{" "}
-            {new Date(match.date).toLocaleDateString()}
-          </p>
+            }}
+            className="px-6 py-3 rounded-lg bg-slate-800 text-gray-300 border border-slate-700 hover:border-gray-500 font-semibold text-base transition-all"
+          >
+            ← Back
+          </button>
         </div>
 
-        <div>
-          <h2 className="text-xl font-semibold mb-3">Teams</h2>
-          <div className="flex items-center gap-4">
-            <img
-              src={`${API.defaults.baseURL}/api/images/proxy/${match.teams?.home.badge}.webp`}
-              alt={match.teams?.home.name}
-              className="w-16 h-16 object-contain"
-            />
-            <p className="text-white">{match.teams?.home.name}</p>
-            <span className="text-white font-bold">VS</span>
-            <p className="text-white">{match.teams?.away.name}</p>
-            <img
-              src={`${API.defaults.baseURL}/api/images/proxy/${match.teams?.away.badge}.webp`}
-              alt={match.teams?.away.name}
-              className="w-16 h-16 object-contain"
-            />
+        {/* Video Player */}
+        <div className="mb-8 rounded-xl overflow-hidden bg-black border border-slate-800">
+          {streams[currentStream]?.embedUrl ? (
+            <div className="relative w-full bg-black" style={{ paddingBottom: "56.25%" }}>
+              <iframe
+                allowFullScreen
+                src={streams[currentStream].embedUrl}
+                title={streams[currentStream].id}
+                className="absolute top-0 left-0 w-full h-full border-0"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              ></iframe>
+            </div>
+          ) : (
+            <div className="w-full aspect-video flex items-center justify-center bg-slate-900">
+              <div className="text-center">
+                <p className="text-gray-400 mb-2">No stream available</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Info & Stream Selection */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left - Match Info */}
+          <div className="space-y-6">
+            <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
+              <h3 className="text-gray-400 text-sm font-semibold mb-4 uppercase">Match Details</h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-gray-400 text-xs mb-1">Category</p>
+                  <p className="text-white font-semibold">{match?.category?.toUpperCase()}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400 text-xs mb-1">Date & Time</p>
+                  <p className="text-white font-semibold">
+                    {new Date(match?.date).toLocaleDateString()} {new Date(match?.date).toLocaleTimeString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Teams */}
+            <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
+              <h3 className="text-gray-400 text-sm font-semibold mb-4 uppercase">Teams</h3>
+              <div className="space-y-4">
+                {/* Home */}
+                <div className="flex items-center gap-3">
+                  <img
+                    src={`${API.defaults.baseURL}/api/images/proxy/${match?.teams?.home.badge}.webp`}
+                    alt={match?.teams?.home.name}
+                    className="w-10 h-10 object-contain"
+                    onError={(e) => {
+                      e.target.src = "/placeholder.png";
+                    }}
+                  />
+                  <span className="text-white font-semibold text-sm">{match?.teams?.home.name}</span>
+                </div>
+
+                <div className="text-center text-gray-400 text-xs font-semibold">VS</div>
+
+                {/* Away */}
+                <div className="flex items-center gap-3">
+                  <img
+                    src={`${API.defaults.baseURL}/api/images/proxy/${match?.teams?.away.badge}.webp`}
+                    alt={match?.teams?.away.name}
+                    className="w-10 h-10 object-contain"
+                    onError={(e) => {
+                      e.target.src = "/placeholder.png";
+                    }}
+                  />
+                  <span className="text-white font-semibold text-sm">{match?.teams?.away.name}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right - Stream Selection */}
+          <div className="lg:col-span-2">
+            <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
+              <h3 className="text-gray-400 text-sm font-semibold mb-4 uppercase">Available Streams</h3>
+
+              {streams.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {streams.map((stream, index) => (
+                      <button
+                        key={stream.id}
+                        onClick={() => setCurrentStream(index)}
+                        className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all flex flex-col items-center justify-center min-h-20 ${
+                          currentStream === index
+                            ? "bg-blue-600 text-white border border-blue-500"
+                            : "bg-slate-800 text-gray-300 border border-slate-700 hover:border-blue-500"
+                        }`}
+                      >
+                        <div className="font-semibold">{stream.source.toUpperCase()}</div>
+                        <div className="text-xs mt-1">
+                          {stream.hd ? "HD" : "SD"} • {stream.language}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {streams[currentStream] && (
+                    <div className="mt-4 pt-4 border-t border-slate-700">
+                      <p className="text-gray-400 text-xs">
+                        <span className="text-green-400 font-semibold">✓</span> Stream ready to play
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-400">
+                  <p>No streams available at the moment</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-
-      {/* select source */}
-      {streams.length ? (
-        <div className="flex gap-3 mb-6 flex-wrap">
-          {streams.map((stream, index) => (
-            <button
-              key={stream.id}
-              onClick={() => setCurrentStream(index)}
-              className={`px-3 py-1 rounded-lg cursor-pointer ${currentStream === index ? "bg-blue-500" : "bg-gray-700"}`}
-            >
-              {stream.source.toUpperCase()} {stream.hd ? "HD" : "SD"} (
-              {stream.language})
-            </button>
-          ))}
-        </div>
-      ) : (
-        <p className="text-white text-center py-6">
-          {" "}
-          No streams available for this match.
-        </p>
-      )}
-
-      {streams[currentStream] && (
-        <div className="relative pt-[56.25%]">
-          <iframe
-            allowFullScreen
-            src={streams[currentStream].embedUrl}
-            title={streams[currentStream].id}
-            className="absolute top-0 left-0 w-full h-full rounded-lg border-0"
-            frameborder="0"
-          ></iframe>
-        </div>
-      )}
-    </div>
+    </section>
   );
 };
 

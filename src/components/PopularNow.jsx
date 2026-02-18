@@ -7,7 +7,7 @@ const PopularNow = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-const getDateLabel = (timestamp) => {
+  const getDateLabel = (timestamp) => {
     const matchDate = new Date(timestamp);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -30,7 +30,6 @@ const getDateLabel = (timestamp) => {
     }
   };
 
-  // Group matches by date
   const groupedMatches = matches.reduce((acc, match) => {
     const dateKey = getDateLabel(match.date);
     if (!acc[dateKey]) acc[dateKey] = [];
@@ -53,55 +52,94 @@ const getDateLabel = (timestamp) => {
   }, []);
 
   if (loading) {
-    return <p className="text-white text-center py-6">Loading popular matches...</p>;
+    return (
+      <div className="w-full py-12">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <div className="inline-block w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin"></div>
+          <p className="text-gray-400 mt-3">Loading matches...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!matches.length) {
-    return <p className="text-white text-center py-6">No popular matches available.</p>;
+    return (
+      <div className="w-full py-12">
+        <div className="max-w-7xl mx-auto px-6 text-center text-gray-400">
+          No matches available right now.
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="font-bold text-3xl text-white mb-8">Popular Now</h1>
-
-      {Object.entries(groupedMatches).map(([date, matches]) => (
-        <div key={date} className="mb-10">
-          <h2 className="text-xl font-semibold text-gray-200 mb-4">{date}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
-            {matches.map((match) => (
-              <div
-                key={match.id}
-                onClick={() =>
-                  navigate(`/match/${match.id}`, {
-                    state: { match, categoryId: match.category },
-                  })
-                }
-                className="bg-gray-800 rounded-xl overflow-hidden cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:shadow-xl"
-              >
-                <div className="relative">
-                  <img
-                    src={match.poster ? `${API.defaults.baseURL}${match.poster}` : "/placeholder.png"}
-                    alt={match.title || "Match Poster"}
-                    className="w-full h-32 object-cover aspect-video bg-gray-700"
-                  />
-                  {match.popular && (
-                    <div className="absolute top-2 right-2 bg-yellow-500 text-gray-900 rounded-full px-2 py-1 text-xs font-bold">
-                      ★ Popular
-                    </div>
-                  )}
-                </div>
-                <div className="p-4">
-                  <p className="text-white font-semibold text-lg mb-1 truncate">{match.title}</p>
-                  <p className="text-gray-400 text-sm">
-                    {match.category.toUpperCase()} • {new Date(match.date).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+    <section className="w-full py-8">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-white mb-2">🔥 Popular Now</h2>
+          <p className="text-gray-400 text-sm">What's trending right now</p>
         </div>
-      ))}
-    </div>
+
+        {Object.entries(groupedMatches).map(([date, matchesGroup], dateIdx) => (
+          <div key={date} className="mb-12">
+            <h3 className="text-lg font-semibold text-gray-300 mb-4 flex items-center gap-2">
+              <span className="w-1 h-1 bg-blue-500 rounded-full"></span>
+              {date}
+            </h3>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {matchesGroup.map((match, idx) => (
+                <button
+                  key={match.id}
+                  onClick={() =>
+                    navigate(`/match/${match.id}`, {
+                      state: { match, categoryId: match.category },
+                    })
+                  }
+                  style={{
+                    animation: `fadeInUp 0.5s ease-out ${(dateIdx * 0.1 + idx * 0.05)}s both`
+                  }}
+                  className="group text-left focus:outline-none"
+                >
+                  <div className="relative mb-3 overflow-hidden rounded-lg bg-slate-800">
+                    {/* Image */}
+                    <img
+                      src={match.poster ? `${API.defaults.baseURL}${match.poster}` : "/placeholder.png"}
+                      alt={match.title}
+                      className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    
+                    {/* Overlay on hover */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    {/* Popular badge */}
+                    {match.popular && (
+                      <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                        ★ POPULAR
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <h3 className="text-sm font-semibold text-white line-clamp-2 group-hover:text-blue-400 transition-colors">
+                    {match.title}
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {match.category.toUpperCase()}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 };
 

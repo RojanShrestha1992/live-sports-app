@@ -15,7 +15,6 @@ const CategoryMatches = () => {
       try {
         const res = await getStreamsById(id);
         setMatches(res.data);
-        console.log(res.data);
       } catch (err) {
         console.log(err);
       } finally {
@@ -25,11 +24,27 @@ const CategoryMatches = () => {
     fetchMatches();
   }, [id]);
 
-  if (loading) return <p className="text-white text-center py-6">Loading...</p>;
-  if (!matches.length)
-    return <p className="text-white text-center py-6">No matches found.</p>;
+  if (loading) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
+          <p className="text-gray-400 mt-4">Loading matches...</p>
+        </div>
+      </div>
+    );
+  }
 
-  // ----- Group matches by date -----
+  if (!matches.length) {
+    return (
+      <div className="w-full py-12">
+        <div className="max-w-7xl mx-auto px-6 text-center text-gray-400">
+          No matches available in this category.
+        </div>
+      </div>
+    );
+  }
+
   const getDateLabel = (timestamp) => {
     const matchDate = new Date(timestamp);
     const today = new Date();
@@ -54,7 +69,7 @@ const CategoryMatches = () => {
   };
 
   const groupedMatches = matches
-    .filter((match) => (showPopular ? match.popular : true)) // apply popular filter
+    .filter((match) => (showPopular ? match.popular : true))
     .reduce((acc, match) => {
       const label = getDateLabel(match.date);
       if (!acc[label]) acc[label] = [];
@@ -62,70 +77,102 @@ const CategoryMatches = () => {
       return acc;
     }, {});
 
-  // ----- Render -----
   return (
-    <section className="p-6 mx-auto max-w-7xl">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-2xl font-bold text-white">Matches</h2>
-        <button
-          onClick={() => setShowPopular(!showPopular)}
-          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-full transition shadow focus:outline-none focus:ring-2 focus:ring-red-500"
-        >
-          {showPopular ? "Show All" : "Show Popular"}
-        </button>
-      </div>
-       <button
-              className=" mb-2 cursor-pointer bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg transition"
-              onClick={() => {
-                navigate(`/`)
-              }}
+    <section className="w-full py-8">
+      <div className="max-w-7xl mx-auto px-6">
+        {/* Header */}
+        <div className="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">{matches[0]?.category.toUpperCase() || "Category"} Matches</h1>
+            <p className="text-gray-400 text-sm">{matches.length} matches available</p>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowPopular(!showPopular)}
+              className={`px-8 py-4 rounded-lg font-semibold text-base transition-all ${
+                showPopular
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-800 text-gray-300 border border-slate-700 hover:border-blue-500"
+              }`}
             >
-              Go Back
+              {showPopular ? "All Matches" : "Popular Only"}
             </button>
-
-      {/* Render each date group */}
-      {Object.entries(groupedMatches).map(([dateLabel, matchesForDate]) => (
-        <div key={dateLabel} className="mb-10">
-          <h3 className="text-xl font-semibold text-white mb-4">{dateLabel}</h3>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {matchesForDate.map((match) => (
-              <div
-                key={match.id}
-                onClick={() =>
-                  navigate(`/match/${match.id}`, { state: { match, categoryId : match.category } })
-                }
-                className="relative group overflow-hidden rounded-lg cursor-pointer transform hover:bg-slate-800 transition duration-300 min-h-[250px]"
-              >
-                {/* Poster */}
-                <img
-                  src={match.poster ? `${API.defaults.baseURL}${match.poster}`: "/public/placeholder.png"}
-                  alt={match.title}
-                  className="w-full object-contain group-hover:scale-110 transition-transform duration-400 bg-gray-800"
-                />
-
-                {/* Popular star */}
-                {match.popular && (
-                 <div className="absolute top-2 right-2 bg-yellow-500 text-gray-900 rounded-full px-2 py-1 text-xs font-bold">
-                      ★ Popular
-                    </div>
-                )}
-
-                {/* Match info */}
-                <div className="p-4">
-                  <h3 className="text-white font-semibold text-lg mb-1">
-                    {match.title}
-                  </h3>
-                  <p className="text-gray-300 text-sm">
-                    {match.category.toUpperCase()} •{" "}
-                    {new Date(match.date).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            ))}
+            <button
+              onClick={() => navigate("/")}
+              className="px-6 py-3 rounded-lg bg-slate-800 text-gray-300 border border-slate-700 hover:border-gray-500 font-semibold text-base transition-all"
+            >
+              ← Back
+            </button>
           </div>
         </div>
-      ))}
+
+        {/* Matches Grid */}
+        {Object.entries(groupedMatches).length > 0 ? (
+          Object.entries(groupedMatches).map(([dateLabel, matchesGroup], dateIdx) => (
+            <div key={dateLabel} className="mb-12">
+              <h3 className="text-lg font-semibold text-gray-300 mb-4 flex items-center gap-2">
+                <span className="w-1 h-1 bg-blue-500 rounded-full"></span>
+                {dateLabel}
+              </h3>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {matchesGroup.map((match, idx) => (
+                  <button
+                    key={match.id}
+                    onClick={() =>
+                      navigate(`/match/${match.id}`, {
+                        state: { match, categoryId: match.category },
+                      })
+                    }
+                    style={{
+                      animation: `fadeInUp 0.5s ease-out ${(dateIdx * 0.1 + idx * 0.05)}s both`
+                    }}
+                    className="group text-left focus:outline-none"
+                  >
+                    <div className="relative mb-3 overflow-hidden rounded-lg bg-slate-800">
+                      {/* Image */}
+                      <img
+                        src={match.poster ? `${API.defaults.baseURL}${match.poster}` : "/placeholder.png"}
+                        alt={match.title}
+                        className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+
+                      {/* Overlay */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                          </svg>
+                        </div>
+                      </div>
+
+                      {/* Badge */}
+                      {match.popular && (
+                        <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                          ★ POPULAR
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <h3 className="text-sm font-semibold text-white line-clamp-2 group-hover:text-blue-400 transition-colors">
+                      {match.title}
+                    </h3>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {match.category.toUpperCase()}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-12 text-gray-400">
+            No matches found for the selected filters.
+          </div>
+        )}
+      </div>
     </section>
   );
 };

@@ -4,11 +4,9 @@ import PopularNow from './PopularNow'
 
 const Home = () => {
   return (
-    <div>
-        
-        <Category/>
-        <PopularNow/>
-        
+    <div className="w-full">
+      <Category />
+      <PopularNow />
     </div>
   )
 }

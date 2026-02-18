@@ -8,21 +8,31 @@ import Navbar from "./components/Navbar";
 
 const App = () => {
   return (
-    <>
-      {" "}
-      <div className="bg-slate-900 min-h-screen text-white">
-      <Router>
-        <Navbar/>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/category/:id" element={<CategoryMatches />} />
-          <Route path="/match/:match_id" element={<MatchCard />} />
-
-        </Routes>
-      </Router>
+    // <Router>
+    //   <div className="min-h-screen bg-slate-950 text-white">
+    //     <Navbar />
+    //     <Routes>
+    //       <Route path="/" element={<Home />} />
+    //       <Route path="/category/:id" element={<CategoryMatches />} />
+    //       <Route path="/match/:match_id" element={<MatchCard />} />
+    //     </Routes>
+    //   </div>
+    // </Router>
+   <Router>
+      <div className="min-h-screen bg-slate-950 text-white flex justify-center">
+        <div className="w-full max-w-7xl px-6">
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/category/:id" element={<CategoryMatches />} />
+            <Route path="/match/:match_id" element={<MatchCard />} />
+          </Routes>
+        </div>
       </div>
-    </>
+    </Router>
   );
 };
 
 export default App;
+
+
